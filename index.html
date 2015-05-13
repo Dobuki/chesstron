@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%">
+<head>
+<meta charset=utf-8 />
+<title>Chesstron</title>
+    
+    <script src="../build/react.js"></script>
+    <script src="../build/JSXTransformer.js"></script>
+    <script src="/header.js"></script>
+    
+    <link href='http://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="css.css">
+    <script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+
+    <link rel="icon" href="img/400x400.png" type="image/png"/>
+    <link rel="shortcut icon" href="img/400x400.png" type="image/png"/>
+    <meta property="og:image" content="http://i.imgur.com/fUNfSLh.png" />
+    <meta property="og:url" content="http://dobuki.github.io/chesstron/"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:title" content="Chesstron"/>
+    <meta property="og:description" content="Online chess battle arena for Humans and Robots" />
+    <meta property="fb:admins" content="530453181"/>
+    <meta property="fb:app_id" content="815492315195047"/>
+
+    <script type="text/jsx">
+        var ChessBoard = React.createClass({      
+            render: function() {
+                var br = [[<tr>[<td></td><td></td>]</tr>],[<tr><td></td><td></td></tr>]];
+                var str = this.props.layout.split("\n").join("");
+                var table = [];
+
+                table.push(<tr><th/>{"ABCDEFGH".split("").map(function(letter){return <th style={{textAlign:'center',width:"4%",height:"4%"}}>{letter}</th>;})}</tr>);
+
+                for(var row=0;row<8;row++) {
+                    var line = [];
+                    for(var col=0;col<8;col++) {
+                        var piece = getPieceURL(str.charAt(col + row*8));
+
+                        var cellID = String.fromCharCode("A".charCodeAt(0)+col)+(row+1);
+                        var style = {
+                            width:"11.5%",
+                            height:"11.5%",
+                            backgroundImage:(row+col)%2==1?"url(img/darkcell.png)":"url(img/lightcell.png)",
+                            backgroundSize:"100% 100%",
+                            textAlign:"center"
+                        };
+                        var img = <img width="85%" height="85%" src={piece}/>;
+                        line.push(<td valign='middle' align='center' key={cellID} id={cellID} style={style}>{img}</td>);
+                    }
+                    table.push(<tr><th style={{textAlign:'center',width:"4%"}}>{row+1}</th>{line}<th style={{width:"4%"}}/></tr>);
+                }
+
+                table.push(<tr><th/>{new Array(8).map(function(){return <td style={{height:"4%"}}></td>})}<th/></tr>);
+
+                var tableStyle = {
+                    backgroundColor:"black",
+                    color:"silver",
+                    fontFamily:"Architects Daughter"
+                };
+                return (<table width="100%" height="100%" style={tableStyle}>{table}</table>);
+            }
+        });
+    </script>
+
+
+    
+    <script type="text/javascript">
+        
+        var emptyDataURI = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
+        var pieces = {
+            "white_king":   '♔',
+            "white_queen":  '♕',
+            "white_rook":   '♖',
+            "white_bishop": '♗',
+            "white_knight": '♘',
+            "white_pawn":   '♙',
+            "black_king":   '♚',
+            "black_queen":  '♛',
+            "black_rook":   '♜',
+            "black_bishop": '♝',
+            "black_knight": '♞',
+            "black_pawn":   '♟'
+        };
+        
+        var initialLayout = 
+            "♜♞♝♛♚♝♞♜\n"+
+            "♟♟♟♟♟♟♟♟\n"+
+            " █ █ █ █\n"+
+            "█ █ █ █ \n"+
+            " █ █ █ █\n"+
+            "█ █ █ █ \n"+
+            "♙♙♙♙♙♙♙♙\n"+
+            "♖♘♗♕♔♗♘♖";
+        
+        function getPieceURL(piece) {
+            switch(piece) {
+                case "♜": return "img/black-rook.svg"; break;
+                case "♞": return "img/black-knight.svg"; break;
+                case "♝": return "img/black-bishop.svg"; break;
+                case "♛": return "img/black-queen.svg"; break;
+                case "♚": return "img/black-king.svg"; break;
+                case "♟": return "img/black-pawn.svg"; break;
+                case "♖": return "img/white-rook.svg"; break;
+                case "♘": return "img/white-knight.svg"; break;
+                case "♗": return "img/white-bishop.svg"; break;
+                case "♕": return "img/white-queen.svg"; break;
+                case "♔": return "img/white-king.svg"; break;
+                case "♙": return "img/white-pawn.svg"; break;
+                default: return emptyDataURI;
+            }
+        }
+        
+    
+        function onDOMContentLoaded(event) {
+            var chessboard = document.getElementById("chessboard");
+            
+            document.addEventListener("visibilitychange", function(e) {
+                if(document.visibilityState!="visible") {
+                }
+            });
+            
+            function resize() {
+                
+                var shortLength = Math.min(document.body.offsetHeight,document.body.offsetWidth);
+                
+                chessboard.style.width = (shortLength) + "px";
+                chessboard.style.height = (shortLength) + "px";
+            }
+            
+            window.addEventListener("resize", resize);
+            resize();
+            window.focus();
+            updateBoard(initialLayout,chessboard);
+        }        
+        window.addEventListener("DOMContentLoaded",onDOMContentLoaded); 
+    
+    </script>
+    
+    <script type="text/jsx">
+        function updateBoard(layout,element) {
+            React.render(<ChessBoard layout={ layout }/>,element);
+        }
+    </script>    
+    
+</head>
+<body style="margin:0px;height:100%">
+    <center>
+        <div id="chessboard" align="center" style="min-height:440px; min-width:440px"/>
+    </center>
+</body>
+</html>
